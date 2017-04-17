@@ -18,6 +18,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		MessageBoxA(0, "Hello", "", 0);
 		break;
 	}*/
+	//while (true){}
 	MessageBoxA(0, "RUNN!", 0, 0);
 	switch (ul_reason_for_call)
 	{

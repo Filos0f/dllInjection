@@ -86,8 +86,13 @@ bool InjectDynamicLibrary(DWORD processId, char* dllPath)
 			printf("Error: VirtualAllocEx. Error:%d\n", GetLastError());
 		}
 
+		if (!WriteProcessMemory(hTargetProcess, loadPath, dllPath, strlen(dllPath), NULL))
+		{
+			printf("Error: WriteProcessMemory. Error:%d\n", GetLastError());
+		}
+
 		HANDLE remoteThreadID = CreateRemoteThread(hTargetProcess, 0, 0,
-			(LPTHREAD_START_ROUTINE)loadLibAddr, loadPath, 0, 0);
+			(LPTHREAD_START_ROUTINE)LoadLibraryA, loadPath, 0, 0);
 		if (remoteThreadID == NULL) 
 		{
 			printf("Error: the remote thread could not be created. Error:%d\n", GetLastError());
@@ -100,6 +105,9 @@ bool InjectDynamicLibrary(DWORD processId, char* dllPath)
 		{
 			printf("Error: WaitForSingleObject. Error:%d\n", GetLastError());
 		}
+		DWORD code;
+		GetExitCodeThread(remoteThreadID, &code);
+		printf("%d", code);
 
 		VirtualFreeEx(hTargetProcess, loadPath, strlen(dllPath), MEM_RELEASE);
 		CloseHandle(remoteThreadID);
@@ -162,8 +170,8 @@ DWORD FindProcessId(wchar_t* processName)
 int main()
 {
 	//FindProcessId(L"calc.exe")
-	
-	InjectDynamicLibrary2(FindProcessId(L"TestProc.exe"), "C:\\Git_Projects2\\dllInjection\\Dll_Injection\\Debug\\InjectedDll.dll");
+	// Taskmgr.exe
+	InjectDynamicLibrary(FindProcessId(L"chrome.exe"), "C:\\Git_Projects2\\dllInjection\\Dll_Injection\\Debug\\InjectedDll.dll");
 
 	return 0;
 }
