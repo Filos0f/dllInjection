@@ -84,7 +84,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 */
 	//LoadLibraryA("C:\\Git_Projects2\\dllInjection\\Dll_Injection\\Debug\\InjectedDll.dll");
-	while (true){}
+
+
+
+	while (true){
+		Sleep(1000);
+	}
 	return 0;
 }
 

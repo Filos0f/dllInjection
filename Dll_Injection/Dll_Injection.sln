@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dll_Injection", "Dll_Injection\Dll_Injection.vcxproj", "{5DC1A8CB-C743-4FA9-8789-C22B93186421}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InjectedDll", "InjectedDll\InjectedDll.vcxproj", "{8228A259-129D-4016-A3E2-48E6D4DD4BC3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestProc", "TestProc\TestProc.vcxproj", "{D581D0BF-4EE9-458B-9042-D987E32003EF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SelfInject", "SelfInject\SelfInject.vcxproj", "{E7E30D96-EF28-4B75-ABE5-B23CCC1DFB96}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,14 @@ Global
 		{D581D0BF-4EE9-458B-9042-D987E32003EF}.Release|Win32.Build.0 = Release|Win32
 		{D581D0BF-4EE9-458B-9042-D987E32003EF}.Release|x64.ActiveCfg = Release|x64
 		{D581D0BF-4EE9-458B-9042-D987E32003EF}.Release|x64.Build.0 = Release|x64
+		{E7E30D96-EF28-4B75-ABE5-B23CCC1DFB96}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E7E30D96-EF28-4B75-ABE5-B23CCC1DFB96}.Debug|Win32.Build.0 = Debug|Win32
+		{E7E30D96-EF28-4B75-ABE5-B23CCC1DFB96}.Debug|x64.ActiveCfg = Debug|x64
+		{E7E30D96-EF28-4B75-ABE5-B23CCC1DFB96}.Debug|x64.Build.0 = Debug|x64
+		{E7E30D96-EF28-4B75-ABE5-B23CCC1DFB96}.Release|Win32.ActiveCfg = Release|Win32
+		{E7E30D96-EF28-4B75-ABE5-B23CCC1DFB96}.Release|Win32.Build.0 = Release|Win32
+		{E7E30D96-EF28-4B75-ABE5-B23CCC1DFB96}.Release|x64.ActiveCfg = Release|x64
+		{E7E30D96-EF28-4B75-ABE5-B23CCC1DFB96}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
