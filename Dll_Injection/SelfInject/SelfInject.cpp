@@ -1,48 +1,23 @@
-// SelfInject.cpp : Defines the entry point for the console application.
+// DllInjector.cpp : Defines the entry point for the console application.
 //
 
 #include "stdafx.h"
-#include <Windows.h>
 
-extern "C" DWORD shellcode_size;
-extern "C" CHAR dll_path[255];
-extern "C" DWORD getProcAddress_RVA;
-extern "C" DWORD threadId;
-
-//kernel32_base			dq 0
-//loadLibraryAddr			dq 0
-//dll_path			db 255 dup(0) - 
-//shellcode_size		dd shellcode_size - shellcode_x64 - 
-
-
-
-void create_child_proccess(LPTSTR file_name, PROCESS_INFORMATION &pi) {
-
-	STARTUPINFO si;
-	ZeroMemory(&si, sizeof(si));
-	si.cb = sizeof(si);
-	ZeroMemory(&pi, sizeof(pi));
-
-	// Start the child process. 
-	if (!CreateProcess(NULL,   // No module name (use command line)
-		file_name,        // Command line
-		NULL,           // Process handle not inheritable
-		NULL,           // Thread handle not inheritable
-		FALSE,          // Set handle inheritance to FALSE
-		CREATE_SUSPENDED,              // No creation flags
-		NULL,           // Use parent's environment block
-		NULL,           // Use parent's starting directory 
-		&si,            // Pointer to STARTUPINFO structure
-		&pi)           // Pointer to PROCESS_INFORMATION structure
-		)
-	{
-		printf("CreateProcess failed (%d).\n", GetLastError());
-		return;
-	}
-
+DWORD WINAPI testThreadProc(_In_ LPVOID lpParameter) {
+	return (NULL == LoadLibrary("Imagehlp.dll"));
 }
 
-void create_remote_thread(HANDLE hProcess, int* p) { 
+void test() {
+	HANDLE hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)testThreadProc, testThreadProc, 0, NULL);
+	WaitForSingleObject(hThread, INFINITE);
+	DWORD code;
+	GetExitCodeThread(hThread, &code);
+	printf("Thread exited with code %d \n", code);
+	CloseHandle(hThread);
+}
+
+
+void create_remote_thread(HANDLE hProcess, int* p) {
 	HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)p, p, 0, NULL);
 	if (!hThread) {
 		printf("Create remote thread failed \n");
@@ -54,18 +29,11 @@ void create_remote_thread(HANDLE hProcess, int* p) {
 	CloseHandle(hThread);
 }
 
-void add_variables_to_asm() {
-	LPVOID loadLibAddr = (LPVOID)GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
-	if (loadLibAddr == NULL)
-	{
-		printf("Error: GetProcAddress. Error:%d\n", GetLastError());
-	}
-}
 
-void inject_shellcode(HANDLE hProcess)
+void inject(HANDLE hProcess)
 {
 	int i = 0xCC;
-	int* p = (int*)VirtualAllocEx(hProcess, NULL, shellcode_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+	int* p = (int*)VirtualAllocEx(hProcess, NULL, sizeof(int), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 	if (!p) {
 		printf("VirtualAllocEx failed \n");
 		return;
@@ -79,27 +47,69 @@ void inject_shellcode(HANDLE hProcess)
 }
 
 
-
-int main()
-{
-
-	LPTSTR exe_file_name = (LPTSTR)"C:\\Windows\\System32\\notepad.exe"; // TO DO path with spaces
-	//char dll_name[] = "D:\\Innopolis\\Advanced System Programming\\projects\\dllInjection\\Dll_Injection\\Release\\InjectedDll.dll"; // TO DO path with spaces
-	char dll_path[255] = "D:\\Innopolis\\Advanced System Programming\\projects\\dllInjection\\Dll_Injection\\Release\\InjectedDll.dll"; // TO DO path with spaces
-
-	shellcode_size = 5;
-	// proccess where we would like to inject
+void create_child_proccess(int argc, char* argv[]) {
+	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
-	create_child_proccess(exe_file_name, pi);
 
-	// inject
-	//add_variables_to_asm();
-	inject_shellcode(pi.hProcess);
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	ZeroMemory(&pi, sizeof(pi));
 
-	// close process and thread hendles
-	ResumeThread(pi.hThread);
+	//if (argc == 3)
+	//{
+	//	name = argv[2];
+	//	//printf("Usage: %s [cmdline]\n", argv[0]);
+	//	//return;
+
+	//}
+
+	// Start the child process. 
+	if (!CreateProcess(NULL,   // No module name (use command line)
+		argv[0],        // Command line
+						//argv[1],        // Command line
+		NULL,           // Process handle not inheritable
+		NULL,           // Thread handle not inheritable
+		FALSE,          // Set handle inheritance to FALSE
+		CREATE_NEW_CONSOLE + 0 * CREATE_SUSPENDED,              // No creation flags
+		NULL,           // Use parent's environment block
+		NULL,           // Use parent's starting directory 
+		&si,            // Pointer to STARTUPINFO structure
+		&pi)           // Pointer to PROCESS_INFORMATION structure
+		)
+	{
+		printf("CreateProcess failed (%d).\n", GetLastError());
+		return;
+	}
+
+	// do inject
+	inject(pi.hProcess);
+
+	// Close process and thread handles. 
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
-    return 0;
+}
+
+
+int main(int argc, char* argv[])
+{
+	if (argc != 1) {
+		if (argc < 3) {
+			printf("warning: injection into myself \n",
+				"hint: DllInjection /run {program}.exe");
+			create_child_proccess(argc, argv);
+		}
+		else {
+			if (0 == strcmp("/run", argv[1])) {
+				create_child_proccess(argc - 2, &argv[2]);
+			}
+		}
+		printf("Hello, WORLD \n");
+		test();
+	}
+	else {
+		printf("Hello, COPY \n");
+		Sleep(500000);
+	}
+	return 0;
 }
 
