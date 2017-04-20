@@ -34,11 +34,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shellcode.asm">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="shellcode.inc">
       <Filter>Header Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="shellcode.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
   </ItemGroup>
 </Project>

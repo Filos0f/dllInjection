@@ -17,6 +17,8 @@ shellcode_size	dd shellcode_size - test_fun
 
 
 PUBLIC test_data
+PUBLIC shellcode_size
+PUBLIC shellcode_addr 
 
 END
 

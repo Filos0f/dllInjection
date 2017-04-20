@@ -1,0 +1,70 @@
+Microsoft (R) Macro Assembler Version 14.00.24210.0	    04/20/17 17:45:39
+shellcode.asm						     Page 1 - 1
+
+
+				.386 
+				.model flat, stdcall 
+				;.data 
+				;test_data		dd 3
+				;shellcode_addr  dd test_fun
+
+ 00000000			.code 
+ 00000000			test_fun PROC 
+ 00000000  A1 0000000E R		mov eax, test_data
+ 00000005  83 C0 01			add eax, 1		 
+ 00000008  A3 0000000E R		mov test_data, eax
+ 0000000D  C3				ret
+ 0000000E			test_fun ENDP
+ 0000000E 00000003		test_data		dd 3
+ 00000012 00000000 R		shellcode_addr  dd test_fun
+ 00000016 00000016		shellcode_size	dd shellcode_size - test_fun
+
+
+				PUBLIC test_data
+				PUBLIC shellcode_size
+				PUBLIC shellcode_addr
+
+				END
+
+ 
+Microsoft (R) Macro Assembler Version 14.00.24210.0	    04/20/17 17:45:39
+shellcode.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000000 DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 0000001A DWord	  Public  'CODE'	
+
+
+Procedures, parameters, and locals:
+
+                N a m e                 Type     Value    Attr
+
+test_fun . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000000E Public STDCALL
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000003h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+shellcode_addr . . . . . . . . .	DWord	 00000012 _TEXT	Public STDCALL
+shellcode_size . . . . . . . . .	DWord	 00000016 _TEXT	Public STDCALL
+test_data  . . . . . . . . . . .	DWord	 0000000E _TEXT	Public STDCALL
+
+	   0 Warnings
+	   0 Errors
