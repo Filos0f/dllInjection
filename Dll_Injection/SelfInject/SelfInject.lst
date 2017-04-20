@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.00.24210.0	    04/20/17 17:45:39
+Microsoft (R) Macro Assembler Version 14.00.24210.0	    04/21/17 01:45:56
 shellcode.asm						     Page 1 - 1
 
 
@@ -9,25 +9,34 @@ shellcode.asm						     Page 1 - 1
 				;shellcode_addr  dd test_fun
 
  00000000			.code 
- 00000000			test_fun PROC 
- 00000000  A1 0000000E R		mov eax, test_data
- 00000005  83 C0 01			add eax, 1		 
- 00000008  A3 0000000E R		mov test_data, eax
- 0000000D  C3				ret
- 0000000E			test_fun ENDP
- 0000000E 00000003		test_data		dd 3
- 00000012 00000000 R		shellcode_addr  dd test_fun
- 00000016 00000016		shellcode_size	dd shellcode_size - test_fun
+ 00000000 00000000		shellcode_start_addr dd 0
+				;test_d0 dd 88888888h
+				;test_d1 dd 88888888h
+				;test_d2 dd 88888888h
+				;test_d3 dd 88888888h
+ 00000004			test_fun PROC 
+					;mov eax, test_data
+ 00000004  83 C0 01			add eax, 1	
+ 00000007  8B C1			mov eax, ecx	 
+					;mov test_data, eax
+ 00000009  C3				ret
+ 0000000A			test_fun ENDP
+ 0000000A 88888888		test_d4 dd 88888888h
+ 0000000E 88888888		test_d5 dd 88888888h
+ 00000012 88888888		test_d6 dd 88888888h
+ 00000016 88888888		test_d7 dd 88888888h
+
+ 0000001A 0000001A R		shellcode_end_addr	dd shellcode_end_addr
+ 0000001E 0000001E		shellcode_s dd shellcode_s - shellcode_start_addr
 
 
-				PUBLIC test_data
-				PUBLIC shellcode_size
-				PUBLIC shellcode_addr
-
+				PUBLIC shellcode_start_addr
+				PUBLIC shellcode_end_addr 
+				PUBLIC shellcode_s
 				END
 
  
-Microsoft (R) Macro Assembler Version 14.00.24210.0	    04/20/17 17:45:39
+Microsoft (R) Macro Assembler Version 14.00.24210.0	    04/21/17 01:45:56
 shellcode.asm						     Symbols 2 - 1
 
 
@@ -39,14 +48,14 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 _DATA  . . . . . . . . . . . . .	32 Bit	 00000000 DWord	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 0000001A DWord	  Public  'CODE'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000022 DWord	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
 
                 N a m e                 Type     Value    Attr
 
-test_fun . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000000E Public STDCALL
+test_fun . . . . . . . . . . . .	P Near	 00000004 _TEXT	Length= 00000006 Public STDCALL
 
 
 Symbols:
@@ -62,9 +71,13 @@ Symbols:
 @fardata?  . . . . . . . . . . .	Text   	 FLAT
 @fardata . . . . . . . . . . . .	Text   	 FLAT
 @stack . . . . . . . . . . . . .	Text   	 FLAT
-shellcode_addr . . . . . . . . .	DWord	 00000012 _TEXT	Public STDCALL
-shellcode_size . . . . . . . . .	DWord	 00000016 _TEXT	Public STDCALL
-test_data  . . . . . . . . . . .	DWord	 0000000E _TEXT	Public STDCALL
+shellcode_end_addr . . . . . . .	DWord	 0000001A _TEXT	Public STDCALL
+shellcode_start_addr . . . . . .	DWord	 00000000 _TEXT	Public STDCALL
+shellcode_s  . . . . . . . . . .	DWord	 0000001E _TEXT	Public STDCALL
+test_d4  . . . . . . . . . . . .	DWord	 0000000A _TEXT	
+test_d5  . . . . . . . . . . . .	DWord	 0000000E _TEXT	
+test_d6  . . . . . . . . . . . .	DWord	 00000012 _TEXT	
+test_d7  . . . . . . . . . . . .	DWord	 00000016 _TEXT	
 
 	   0 Warnings
 	   0 Errors

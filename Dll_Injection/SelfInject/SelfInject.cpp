@@ -4,8 +4,11 @@
 #include "stdafx.h"
 #include <Windows.h>
 
-extern "C" DWORD shellcode_size;
-extern "C" DWORD shellcode_addr;
+extern "C" DWORD shellcode_start_addr;
+extern "C" DWORD shellcode_end_addr;
+extern "C" DWORD shellcode_s;
+
+
 //extern "C" CHAR dll_path[255];
 //extern "C" DWORD getProcAddress_RVA;
 //extern "C" DWORD threadId;
@@ -30,7 +33,7 @@ void create_child_proccess(LPTSTR file_name, PROCESS_INFORMATION &pi) {
 		NULL,           // Process handle not inheritable
 		NULL,           // Thread handle not inheritable
 		FALSE,          // Set handle inheritance to FALSE
-		CREATE_SUSPENDED,              // No creation flags
+		0*CREATE_SUSPENDED,              // No creation flags
 		NULL,           // Use parent's environment block
 		NULL,           // Use parent's starting directory 
 		&si,            // Pointer to STARTUPINFO structure
@@ -44,15 +47,15 @@ void create_child_proccess(LPTSTR file_name, PROCESS_INFORMATION &pi) {
 }
 
 void create_remote_thread(HANDLE hProcess, int* p) {
-	HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)p, p, 0, NULL);
-	if (!hThread) {
-		printf("Create remote thread failed \n");
-	}
-	WaitForSingleObject(hThread, INFINITE);
-	DWORD code;
-	GetExitCodeThread(hThread, &code);
-	printf("Thread exited with code %d \n", code);
-	CloseHandle(hThread);
+	//HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)p, p, 0, NULL);
+	//if (!hThread) {
+	//	printf("Create remote thread failed \n");
+	//}
+	//WaitForSingleObject(hThread, INFINITE);
+	//DWORD code;
+	//GetExitCodeThread(hThread, &code);
+	//printf("Thread exited with code %d \n", code);
+	//CloseHandle(hThread);
 }
 
 void add_variables_to_asm() {
@@ -65,6 +68,14 @@ void add_variables_to_asm() {
 
 void inject_shellcode(HANDLE hProcess)
 {
+
+	LPDWORD addr_word = &shellcode_start_addr + 1;
+	//SIZE_T shellcode_size = (&shellcode_end_addr - &shellcode_start_addr) - 1;
+	SIZE_T shellcode_size = shellcode_s;
+
+	LPVOID addr = (LPVOID)addr_word;
+	shellcode_size = 6;
+
 	int i = 0xCC;
 	int* p = (int*)VirtualAllocEx(hProcess, NULL, shellcode_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 	if (!p) {
@@ -72,11 +83,25 @@ void inject_shellcode(HANDLE hProcess)
 		return;
 	}
 	printf("VirtualAllocEx: %p \n", p);
-	if (!WriteProcessMemory(hProcess, p, (LPCVOID)shellcode_addr, sizeof(int), NULL)) {
+
+
+	if (!WriteProcessMemory(hProcess, p, addr, shellcode_size, NULL)) {
 		printf("VirtualAllocEx failed \n");
 		return;
 	}
-	create_remote_thread(hProcess, p);
+
+	HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)p, NULL, 0, NULL);
+	if (!hThread) {
+		printf("Create remote thread failed \n");
+	}
+	WaitForSingleObject(hThread, INFINITE);
+	DWORD code;
+	GetExitCodeThread(hThread, &code);
+	printf("Thread exited with code %d \n", code);
+	CloseHandle(hThread);
+
+
+	//create_remote_thread(hProcess, p);
 }
 
 
@@ -86,9 +111,9 @@ int main()
 
 	printf("sdfsd");
 
-	LPTSTR exe_file_name = (LPTSTR)"D:\\Innopolis\\ASP\\projects\\dllInjection\\Dll_Injection\\Debug\\TestProc.exe"; // TO DO path with spaces
+	LPTSTR exe_file_name = (LPTSTR)"C:\\Users\\Vadim\\Documents\\dllInjection\\Dll_Injection\\Debug\\TestProc.exe"; // TO DO path with spaces
 																		 //char dll_name[] = "D:\\Innopolis\\Advanced System Programming\\projects\\dllInjection\\Dll_Injection\\Release\\InjectedDll.dll"; // TO DO path with spaces
-	char dll_path[255] = "D:\\Innopolis\\ASP\\projects\\dllInjection\\Dll_Injection\\Release\\InjectedDll.dll"; // TO DO path with spaces
+	char dll_path[255] = "C:\\Users\\Vadim\\Documents\\dllInjection\\Dll_Injection\\Debug\\InjectedDll.dll"; // TO DO path with spaces
 
 	// proccess where we would like to inject
 	PROCESS_INFORMATION pi;

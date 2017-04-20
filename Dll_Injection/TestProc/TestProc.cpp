@@ -88,6 +88,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 	while (true){
+		printf("test proc");
 		Sleep(10000);
 	}
 	return 0;
