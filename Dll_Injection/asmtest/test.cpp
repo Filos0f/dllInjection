@@ -1,20 +1,8 @@
-// SelfInject.cpp : Defines the entry point for the console application.
-//
-
-#include "stdafx.h"
+#include <stdio.h>
 #include <Windows.h>
 
+extern "C" DWORD test_data;
 extern "C" DWORD shellcode_size;
-extern "C" CHAR dll_path[255];
-extern "C" DWORD getProcAddress_RVA;
-extern "C" DWORD threadId;
-
-//kernel32_base			dq 0
-//loadLibraryAddr			dq 0
-//dll_path			db 255 dup(0) - 
-//shellcode_size		dd shellcode_size - shellcode_x64 - 
-
-
 
 void create_child_proccess(LPTSTR file_name, PROCESS_INFORMATION &pi) {
 
@@ -42,7 +30,7 @@ void create_child_proccess(LPTSTR file_name, PROCESS_INFORMATION &pi) {
 
 }
 
-void create_remote_thread(HANDLE hProcess, int* p) { 
+void create_remote_thread(HANDLE hProcess, int* p) {
 	HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)p, p, 0, NULL);
 	if (!hThread) {
 		printf("Create remote thread failed \n");
@@ -52,14 +40,6 @@ void create_remote_thread(HANDLE hProcess, int* p) {
 	GetExitCodeThread(hThread, &code);
 	printf("Thread exited with code %d \n", code);
 	CloseHandle(hThread);
-}
-
-void add_variables_to_asm() {
-	LPVOID loadLibAddr = (LPVOID)GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
-	if (loadLibAddr == NULL)
-	{
-		printf("Error: GetProcAddress. Error:%d\n", GetLastError());
-	}
 }
 
 void inject_shellcode(HANDLE hProcess)
@@ -79,15 +59,13 @@ void inject_shellcode(HANDLE hProcess)
 }
 
 
-
 int main()
 {
 
-	LPTSTR exe_file_name = (LPTSTR)"C:\\Windows\\System32\\notepad.exe"; // TO DO path with spaces
-	//char dll_name[] = "D:\\Innopolis\\Advanced System Programming\\projects\\dllInjection\\Dll_Injection\\Release\\InjectedDll.dll"; // TO DO path with spaces
+	LPTSTR exe_file_name = (LPTSTR)"D:\\Innopolis\\Advanced System Programming\\projects\\dllInjection\\Dll_Injection\\Debug\\TestProc.exe"; // TO DO path with spaces
+																		 //char dll_name[] = "D:\\Innopolis\\Advanced System Programming\\projects\\dllInjection\\Dll_Injection\\Release\\InjectedDll.dll"; // TO DO path with spaces
 	char dll_path[255] = "D:\\Innopolis\\Advanced System Programming\\projects\\dllInjection\\Dll_Injection\\Release\\InjectedDll.dll"; // TO DO path with spaces
 
-	shellcode_size = 5;
 	// proccess where we would like to inject
 	PROCESS_INFORMATION pi;
 	create_child_proccess(exe_file_name, pi);
@@ -100,6 +78,11 @@ int main()
 	ResumeThread(pi.hThread);
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
-    return 0;
-}
 
+	int i = 1;
+
+	int size = 1000;
+
+	printf("%d", test_data);
+	return 0;
+}

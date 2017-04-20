@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestProc", "TestProc\TestPr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SelfInject", "SelfInject\SelfInject.vcxproj", "{E7E30D96-EF28-4B75-ABE5-B23CCC1DFB96}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "asmtest", "asmtest\asmtest.vcxproj", "{0D908251-F6F3-4DD4-96D3-007E421BC640}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -51,6 +53,14 @@ Global
 		{E7E30D96-EF28-4B75-ABE5-B23CCC1DFB96}.Release|Win32.Build.0 = Release|Win32
 		{E7E30D96-EF28-4B75-ABE5-B23CCC1DFB96}.Release|x64.ActiveCfg = Release|x64
 		{E7E30D96-EF28-4B75-ABE5-B23CCC1DFB96}.Release|x64.Build.0 = Release|x64
+		{0D908251-F6F3-4DD4-96D3-007E421BC640}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0D908251-F6F3-4DD4-96D3-007E421BC640}.Debug|Win32.Build.0 = Debug|Win32
+		{0D908251-F6F3-4DD4-96D3-007E421BC640}.Debug|x64.ActiveCfg = Debug|x64
+		{0D908251-F6F3-4DD4-96D3-007E421BC640}.Debug|x64.Build.0 = Debug|x64
+		{0D908251-F6F3-4DD4-96D3-007E421BC640}.Release|Win32.ActiveCfg = Release|Win32
+		{0D908251-F6F3-4DD4-96D3-007E421BC640}.Release|Win32.Build.0 = Release|Win32
+		{0D908251-F6F3-4DD4-96D3-007E421BC640}.Release|x64.ActiveCfg = Release|x64
+		{0D908251-F6F3-4DD4-96D3-007E421BC640}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
