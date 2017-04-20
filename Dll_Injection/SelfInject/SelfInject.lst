@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.00.24210.0	    04/21/17 01:45:56
+Microsoft (R) Macro Assembler Version 14.00.24210.0	    04/21/17 02:46:32
 shellcode.asm						     Page 1 - 1
 
 
@@ -8,6 +8,8 @@ shellcode.asm						     Page 1 - 1
 				;test_data		dd 3
 				;shellcode_addr  dd test_fun
 
+				.stack 100h
+
  00000000			.code 
  00000000 00000000		shellcode_start_addr dd 0
 				;test_d0 dd 88888888h
@@ -15,19 +17,67 @@ shellcode.asm						     Page 1 - 1
 				;test_d2 dd 88888888h
 				;test_d3 dd 88888888h
  00000004			test_fun PROC 
-					;mov eax, test_data
- 00000004  83 C0 01			add eax, 1	
- 00000007  8B C1			mov eax, ecx	 
-					;mov test_data, eax
- 00000009  C3				ret
- 0000000A			test_fun ENDP
- 0000000A 88888888		test_d4 dd 88888888h
- 0000000E 88888888		test_d5 dd 88888888h
- 00000012 88888888		test_d6 dd 88888888h
- 00000016 88888888		test_d7 dd 88888888h
+					;;mov eax, test_data
+					;add eax, 1	
+					;mov eax, ecx	 
+					;;mov test_data, eax
 
- 0000001A 0000001A R		shellcode_end_addr	dd shellcode_end_addr
- 0000001E 0000001E		shellcode_s dd shellcode_s - shellcode_start_addr
+					;ASSUME FS:NOTHING
+					;xor ebx, ebx            ;//clear ebx
+					;mov ebx, fs:[ 30h ]    ;//get a pointer to the PEB
+					;mov ebx, [ ebx + 0Ch ] ;//get PEB->Ldr
+					;mov ebx, [ ebx + 14h ] ;//get PEB->Ldr.InMemoryOrderModuleList.Flink(1st entry) **here**       
+					;mov ebx, [ ebx ]        ;//get the next entry(2nd entry)
+					;mov ebx, [ ebx ]        ;//get the next entry(3rd entry)
+					;mov ebx, [ ebx + 10h ] ;//get the 3rd entries base address(kernel32.dll)
+					;ASSUME FS:ERROR
+
+
+
+
+					ASSUME FS:NOTHING
+ 00000004  FC				cld ;// clear the direction flag for the loop
+ 00000005  33 D2			xor edx, edx ;// zero edx
+					;;mov edx, [fs:edx+30h] ;// get a pointer to the PEB
+ 00000007  64: 8B 1D			mov ebx, fs:[ 30h ]    ;//get a pointer to the PEB
+	   00000030
+ 0000000E  8B 52 0C			mov edx, [edx+0Ch] ;// get PEB->Ldr
+					;mov edx, [edx+14h] ;// get the first module from the InMemoryOrder module list
+				;next_mod:
+					;mov esi, [edx+28h] ;// get pointer to modules name (unicode string)
+					;push 24 ;// push down the length we want to check
+					;pop ecx ;// set ecx to this length for the loop
+					;xor edi, edi ;// clear edi which will store the hash of the module name
+				;loop_modname:
+					;xor eax, eax ;// clear eax
+					;lodsb ;// read in the next byte of the name
+					;cmp al, 'a' ;// some versions of Windows use lower case module names
+					;jl not_lowercase
+					;sub al, 20h ;// if so normalise to uppercase
+				;not_lowercase:
+					;ror edi, 13 ;// rotate right our hash value
+					;add edi, eax ;// add the next byte of the name to the hash
+					;loop loop_modname ;// loop until we have read enough
+					;cmp edi, 6A4ABC5Bh ;// compare the hash with that of KERNEL32.DLL
+					;mov ebx, [edx+10h] ;// get this modules base address
+					;mov edx, [edx] ;// get the next module
+					;jne next_mod ;// if it doesn't match, process the next module
+					ASSUME FS:ERROR
+
+
+
+
+
+
+ 00000011  C3				ret
+ 00000012			test_fun ENDP
+ 00000012 88888888		test_d4 dd 88888888h
+ 00000016 88888888		test_d5 dd 88888888h
+ 0000001A 88888888		test_d6 dd 88888888h
+ 0000001E 88888888		test_d7 dd 88888888h
+
+ 00000022 00000022 R		shellcode_end_addr	dd shellcode_end_addr
+ 00000026 00000026		shellcode_s dd shellcode_s - shellcode_start_addr
 
 
 				PUBLIC shellcode_start_addr
@@ -36,7 +86,7 @@ shellcode.asm						     Page 1 - 1
 				END
 
  
-Microsoft (R) Macro Assembler Version 14.00.24210.0	    04/21/17 01:45:56
+Microsoft (R) Macro Assembler Version 14.00.24210.0	    04/21/17 02:46:32
 shellcode.asm						     Symbols 2 - 1
 
 
@@ -47,15 +97,16 @@ Segments and Groups:
                 N a m e                 Size     Length   Align   Combine Class
 
 FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00000100 DWord	  Stack	  'STACK'	 
 _DATA  . . . . . . . . . . . . .	32 Bit	 00000000 DWord	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000022 DWord	  Public  'CODE'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 0000002A DWord	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
 
                 N a m e                 Type     Value    Attr
 
-test_fun . . . . . . . . . . . .	P Near	 00000004 _TEXT	Length= 00000006 Public STDCALL
+test_fun . . . . . . . . . . . .	P Near	 00000004 _TEXT	Length= 0000000E Public STDCALL
 
 
 Symbols:
@@ -71,13 +122,13 @@ Symbols:
 @fardata?  . . . . . . . . . . .	Text   	 FLAT
 @fardata . . . . . . . . . . . .	Text   	 FLAT
 @stack . . . . . . . . . . . . .	Text   	 FLAT
-shellcode_end_addr . . . . . . .	DWord	 0000001A _TEXT	Public STDCALL
+shellcode_end_addr . . . . . . .	DWord	 00000022 _TEXT	Public STDCALL
 shellcode_start_addr . . . . . .	DWord	 00000000 _TEXT	Public STDCALL
-shellcode_s  . . . . . . . . . .	DWord	 0000001E _TEXT	Public STDCALL
-test_d4  . . . . . . . . . . . .	DWord	 0000000A _TEXT	
-test_d5  . . . . . . . . . . . .	DWord	 0000000E _TEXT	
-test_d6  . . . . . . . . . . . .	DWord	 00000012 _TEXT	
-test_d7  . . . . . . . . . . . .	DWord	 00000016 _TEXT	
+shellcode_s  . . . . . . . . . .	DWord	 00000026 _TEXT	Public STDCALL
+test_d4  . . . . . . . . . . . .	DWord	 00000012 _TEXT	
+test_d5  . . . . . . . . . . . .	DWord	 00000016 _TEXT	
+test_d6  . . . . . . . . . . . .	DWord	 0000001A _TEXT	
+test_d7  . . . . . . . . . . . .	DWord	 0000001E _TEXT	
 
 	   0 Warnings
 	   0 Errors
