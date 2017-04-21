@@ -80,11 +80,20 @@ void add_variables_to_asm() {
 bool inject_dll(HANDLE hprocess, HANDLE hThread, char* dllPath, DWORD kernel32_addr)
 {
 	HANDLE hTargetProcess = hprocess;
-	LPVOID loadLibAddr = (LPVOID)GetProcAddress((HMODULE)kernel32_addr, "LoadLibraryA");
+
+	DWORD addr_base = (DWORD)GetModuleHandleA("kernel32.dll");
+	DWORD addr_loadlib = (DWORD)GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
+	DWORD offset = addr_loadlib - addr_base;
+	DWORD loadLibAddr_t = kernel32_addr + offset;
+	LPVOID loadLibAddr = (LPVOID)loadLibAddr_t;
+
+	//LPVOID loadLibAddr = (LPVOID)GetProcAddress((HMODULE)kernel32_addr, "LoadLibraryA"); // TO DO add RVA
+	//LPVOID loadLibAddr = (LPVOID)GetProcAddress((HMODULE)kernel32_addr, "LoadLibraryA"); // TO DO add RVA
 	//LPVOID loadLibAddr = (LPVOID)GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
 	if (loadLibAddr == NULL)
 	{
 		printf("Error: GetProcAddress. Error:%d\n", GetLastError());
+		return false;
 	}
 	LPVOID loadPath = VirtualAllocEx(hTargetProcess, 0, strlen(dllPath),
 		MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
@@ -105,22 +114,34 @@ bool inject_dll(HANDLE hprocess, HANDLE hThread, char* dllPath, DWORD kernel32_a
 	if (remoteThreadID == NULL)
 	{
 		printf("Error: the remote thread could not be created. Error:%d\n", GetLastError());
-
+		return false;
 	}
 	else
 	{
 		printf("Success: the remote thread was successfully created.\n");
 	}
-
-	ResumeThread(hThread);
-
+	// TO DO if 
 	if (WaitForSingleObject(remoteThreadID, INFINITE) == WAIT_FAILED)
 	{
 		printf("Error: WaitForSingleObject. Error:%d\n", GetLastError());
+		return false;
 	}
+	
 	DWORD code;
 	GetExitCodeThread(remoteThreadID, &code);
+	if (code != 0){
+		printf("injection ok\n");
+		ResumeThread(hThread);
+	}
+	else {
+		printf("injection fail\n");
+	}
+	
 	printf("%d", code);
+	
+
+
+	
 
 	VirtualFreeEx(hTargetProcess, loadPath, strlen(dllPath), MEM_RELEASE);
 	CloseHandle(remoteThreadID);
@@ -175,6 +196,7 @@ int main()
 
 	printf("sdfsd");
 
+	//LPTSTR exe_file_name = (LPTSTR)"C:\\Windows\\System32\\notepad.exe";
 	LPTSTR exe_file_name = (LPTSTR)"C:\\Users\\Vadim\\Documents\\dllInjection\\Dll_Injection\\Debug\\TestProc.exe"; // TO DO path with spaces
 																		 //char dll_name[] = "D:\\Innopolis\\Advanced System Programming\\projects\\dllInjection\\Dll_Injection\\Release\\InjectedDll.dll"; // TO DO path with spaces
 	char dll_path[255] = "C:\\Users\\Vadim\\Documents\\dllInjection\\Dll_Injection\\Debug\\InjectedDll.dll"; // TO DO path with spaces

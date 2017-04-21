@@ -6,20 +6,23 @@ BOOL APIENTRY DllMain( HMODULE hModule,
                        LPVOID lpReserved
 					 )
 {
-	/*switch (ul_reason_for_call)
+	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
 		MessageBoxA(0, "Hello", "", 0);
-	case DLL_THREAD_ATTACH:
-		MessageBoxA(0, "Hello", "", 0);
-	case DLL_THREAD_DETACH:
-		MessageBoxA(0, "Hello", "", 0);
-	case DLL_PROCESS_DETACH:
-		MessageBoxA(0, "Hello", "", 0);
 		break;
-	}*/
+	//case DLL_THREAD_ATTACH:
+	//	MessageBoxA(0, "Hello", "", 0); 
+	//case DLL_THREAD_DETACH:
+	//	MessageBoxA(0, "Hello", "", 0);
+	case DLL_PROCESS_DETACH:
+		MessageBoxA(0, "Goodbay", "", 0);
+		break;
+	}
 	//while (true){}
-	MessageBoxA(0, "RUNN!", 0, 0);
+
+	//MessageBoxA(0, "RUNN!", 0, 0);
+
 	//switch (ul_reason_for_call)
 	//{
 	//case DLL_PROCESS_ATTACH:
@@ -35,6 +38,6 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	//	
 	//	break;
 	//}
-	return TRUE;
+	return false;
 }
 
