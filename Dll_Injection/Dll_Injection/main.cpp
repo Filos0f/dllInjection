@@ -84,15 +84,20 @@ bool InjectDynamicLibrary(DWORD processId, char* dllPath)
 		if (loadPath == NULL)
 		{
 			printf("Error: VirtualAllocEx. Error:%d\n", GetLastError());
+			return false;
 		}
 
 		if (!WriteProcessMemory(hTargetProcess, loadPath, dllPath, strlen(dllPath), NULL))
 		{
 			printf("Error: WriteProcessMemory. Error:%d\n", GetLastError());
+			return false;
 		}
 
 		HANDLE remoteThreadID = CreateRemoteThread(hTargetProcess, 0, 0,
 			(LPTHREAD_START_ROUTINE)LoadLibraryA, loadPath, 0, 0);
+
+		//HANDLE remoteThreadID = CreateRemoteThread(hTargetProcess, 0, 0,
+		//	(LPTHREAD_START_ROUTINE)LoadLibraryA, loadPath, 0, 0);
 		if (remoteThreadID == NULL) 
 		{
 			printf("Error: the remote thread could not be created. Error:%d\n", GetLastError());

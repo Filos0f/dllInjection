@@ -7,6 +7,7 @@
 extern "C" DWORD shellcode_start_addr;
 extern "C" DWORD shellcode_end_addr;
 extern "C" DWORD shellcode_s;
+extern "C" DWORD load_lib_addr; 
 
 
 //extern "C" CHAR dll_path[255];
@@ -33,7 +34,7 @@ void create_child_proccess(LPTSTR file_name, PROCESS_INFORMATION &pi) {
 		NULL,           // Process handle not inheritable
 		NULL,           // Thread handle not inheritable
 		FALSE,          // Set handle inheritance to FALSE
-		0*CREATE_SUSPENDED,              // No creation flags
+		CREATE_SUSPENDED,              // No creation flags
 		NULL,           // Use parent's environment block
 		NULL,           // Use parent's starting directory 
 		&si,            // Pointer to STARTUPINFO structure
@@ -66,7 +67,70 @@ void add_variables_to_asm() {
 	}
 }
 
-void inject_shellcode(HANDLE hProcess)
+//void inject_dll(DWORD kernel32_addr) {
+//	LPVOID loadLibAddr = (LPVOID)GetProcAddress((HMODULE)kernel32_addr, "LoadLibraryA");
+//	LPVOID test_loadLibAddr = (LPVOID)GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
+//
+//	if (loadLibAddr != 0) {
+//		printf("fail");
+//	}
+//}
+
+
+bool inject_dll(HANDLE hprocess, HANDLE hThread, char* dllPath, DWORD kernel32_addr)
+{
+	HANDLE hTargetProcess = hprocess;
+	LPVOID loadLibAddr = (LPVOID)GetProcAddress((HMODULE)kernel32_addr, "LoadLibraryA");
+	//LPVOID loadLibAddr = (LPVOID)GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
+	if (loadLibAddr == NULL)
+	{
+		printf("Error: GetProcAddress. Error:%d\n", GetLastError());
+	}
+	LPVOID loadPath = VirtualAllocEx(hTargetProcess, 0, strlen(dllPath),
+		MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	if (loadPath == NULL)
+	{
+		printf("Error: VirtualAllocEx. Error:%d\n", GetLastError());
+		return false;
+	}
+
+	if (!WriteProcessMemory(hTargetProcess, loadPath, dllPath, strlen(dllPath), NULL))
+	{
+		printf("Error: WriteProcessMemory. Error:%d\n", GetLastError());
+		return false;
+	}
+
+	HANDLE remoteThreadID = CreateRemoteThread(hTargetProcess, 0, 0, 
+		(LPTHREAD_START_ROUTINE)LoadLibraryA, loadPath, 0, 0);
+	if (remoteThreadID == NULL)
+	{
+		printf("Error: the remote thread could not be created. Error:%d\n", GetLastError());
+
+	}
+	else
+	{
+		printf("Success: the remote thread was successfully created.\n");
+	}
+
+	ResumeThread(hThread);
+
+	if (WaitForSingleObject(remoteThreadID, INFINITE) == WAIT_FAILED)
+	{
+		printf("Error: WaitForSingleObject. Error:%d\n", GetLastError());
+	}
+	DWORD code;
+	GetExitCodeThread(remoteThreadID, &code);
+	printf("%d", code);
+
+	VirtualFreeEx(hTargetProcess, loadPath, strlen(dllPath), MEM_RELEASE);
+	CloseHandle(remoteThreadID);
+	CloseHandle(hTargetProcess);
+	return true;
+}
+
+
+
+void inject_shellcode(HANDLE hProcess, DWORD &kernel32_base_addr)
 {
 
 	LPDWORD addr_word = &shellcode_start_addr + 1;
@@ -100,10 +164,10 @@ void inject_shellcode(HANDLE hProcess)
 	printf("Thread exited with code %d \n", code);
 	CloseHandle(hThread);
 
+	kernel32_base_addr = code;
 
 	//create_remote_thread(hProcess, p);
 }
-
 
 
 int main()
@@ -121,7 +185,11 @@ int main()
 	 
 	// inject
 	//add_variables_to_asm();
-	inject_shellcode(pi.hProcess);
+	DWORD kernel32_base_addr;
+	//LPVOID p_kernel32_addr;
+
+	inject_shellcode(pi.hProcess, kernel32_base_addr);
+	inject_dll(pi.hProcess, pi.hThread, dll_path, kernel32_base_addr);
 
 	// close process and thread hendles
 	ResumeThread(pi.hThread);
