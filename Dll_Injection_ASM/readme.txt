@@ -1,0 +1,1 @@
+Main project with Dll injector named "SelfInject"
